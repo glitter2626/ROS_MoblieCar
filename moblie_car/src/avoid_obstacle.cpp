@@ -8,6 +8,8 @@ ros::Publisher twist_pub;
 
 ros::Subscriber odometry_sub;
 
+ros::Subscriber result_sub;
+
 
 float e = 0;
 float old_e = 0;
@@ -59,7 +61,7 @@ void odometryCallback(const nav_msgs::Odometry::ConstPtr& msg)
     float z = msg->pose.pose.orientation.z;
     float w = msg->pose.pose.orientation.w;
     
-    float phi = atan2(2*(w*z+x*y), (1-2*(pow(y,2)+pow(z,2)))) * 180 / pi;
+    float phi = atan2(2*(w*z+x*y), (1-2*(pow(y,2)+pow(z,2)))) * 180.0 / pi;
     float angular_z = PID(delta_theta, phi);
     float v = 0.2;
     
@@ -71,6 +73,9 @@ void odometryCallback(const nav_msgs::Odometry::ConstPtr& msg)
     twist_pub.publish(twist_msg);
 }
 
+void resultCallback(const std_msgs::String::ConstPtr& msg){
+
+}
 
 int main(int argc, char **argv)
 {
@@ -82,6 +87,8 @@ int main(int argc, char **argv)
   twist_pub = n.advertise<geometry_msgs::Twist>("/Twist", 2000);
 
   odometry_sub = n.subscribe("/Odometry", 2000, odometryCallback);
+  
+  result_sub = n.subscribe("/result", 2000, resultCallback);
 
   init_PID();
 
