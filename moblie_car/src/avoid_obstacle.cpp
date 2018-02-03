@@ -55,18 +55,18 @@ void odometryCallback(const nav_msgs::Odometry::ConstPtr& msg)
     geometry_msgs::Twist twist_msg;
     
     // TODO
-    float delta_theta = atan2((GOAL_Y - msg->pose.pose.position.y), (GOAL_X - msg->pose.pose.position.x)) * 180.0 / pi;
+    float delta_theta = atan2((GOAL_Y - msg->pose.pose.position.y), (GOAL_X - msg->pose.pose.position.x));
     float x = msg->pose.pose.orientation.x;
     float y = msg->pose.pose.orientation.y;
     float z = msg->pose.pose.orientation.z;
     float w = msg->pose.pose.orientation.w;
     
-    float phi = atan2(2*(w*z+x*y), (1-2*(pow(y,2)+pow(z,2)))) * 180.0 / pi;
+    float phi = atan2(2*(w*z+x*y), (1-2*(pow(y,2)+pow(z,2))));
     float angular_z = PID(delta_theta, phi);
     float v = 0.2;
     
-    twist_msg.linear.x = v * cos(phi*pi/180.0);
-    twist_msg.linear.y = v * sin(phi*pi/180.0);
+    twist_msg.linear.x = v * cos(phi);
+    twist_msg.linear.y = v * sin(phi);
     twist_msg.angular.z = angular_z;
     
     
@@ -84,9 +84,9 @@ int main(int argc, char **argv)
   
   ros::NodeHandle n;
   
-  twist_pub = n.advertise<geometry_msgs::Twist>("/Twist", 2000);
+  twist_pub = n.advertise<geometry_msgs::Twist>("/cmd_vel", 2000);
 
-  odometry_sub = n.subscribe("/Odometry", 2000, odometryCallback);
+  odometry_sub = n.subscribe("/odom", 2000, odometryCallback);
   
   result_sub = n.subscribe("/result", 2000, resultCallback);
 
