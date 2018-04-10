@@ -11,3 +11,8 @@
 * publish goal topic: click "2D Nav Goal" button to implement 
 
 ![image](https://github.com/glitter2626/ROS_MoblieCar/blob/master/rviz_goal.png)
+
+## Method:
+* First: calculate Point A & Point B vector  
+* Then: summing per radian vector by checking laser data values   
+* Final: combine two vector  
