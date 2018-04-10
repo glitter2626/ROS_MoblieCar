@@ -38,6 +38,7 @@ const float pi = 3.1415;
 float GOAL_X = -2.0;
 float GOAL_Y = -0.5;
 
+const int vector_count = 30;
 float x_vector = 0.0;
 float y_vector = 0.0;
 
@@ -90,9 +91,10 @@ void odometryCallback(const nav_msgs::Odometry::ConstPtr& msg)
     float delta_x = GOAL_X - msg->pose.pose.position.x;
     float delta_y = GOAL_Y - msg->pose.pose.position.y;
     // normalize
-    float alpha = 0.75;
-    delta_x = delta_x / sqrt(pow(delta_x, 2) + pow(delta_y, 2));
-    delta_y = delta_y / sqrt(pow(delta_x, 2) + pow(delta_y, 2));
+    float alpha = 0.6;
+    float normal = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
+    delta_x = delta_x / normal;
+    delta_y = delta_y / normal;
     float delta_theta = atan2(delta_y * alpha + y_vector * (1 - alpha), delta_x * alpha + x_vector * (1 - alpha));
     
     //float delta_theta = atan2((GOAL_Y - msg->pose.pose.position.y), (GOAL_X - msg->pose.pose.position.x));
@@ -102,6 +104,7 @@ void odometryCallback(const nav_msgs::Odometry::ConstPtr& msg)
     float w = msg->pose.pose.orientation.w;
     
     float phi = atan2(2*(w*z+x*y), (1-2*(pow(y,2)+pow(z,2))));
+    tmp_theta = phi;
     
     float angular_z = PID(delta_theta, phi);
     float v = 0.2;
@@ -130,37 +133,54 @@ void goalCallback(const geometry_msgs::PoseStamped::ConstPtr& msg){
 
 void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg){
 
-    std::pair<float, float> laser_vector[5];
+    std::pair<float, float> laser_vector[vector_count];
     int size = msg->ranges.size();
+    float car_theta = tmp_theta;
     
     x_vector = 0.0;
     y_vector = 0.0;
         
-    for(int i = 0, j = 0; i < size; i += int(size/5), j++){
+    for(int i = 0, j = 0; i < size; i += int(size/vector_count), j++){
        
             
         float phi = ((float)i / size) * 360;
-        phi = DEG2RAD(phi);
+        phi = DEG2RAD(phi) + car_theta;
         
-        if(msg->ranges[i] == std::numeric_limits<float>::infinity()){
-            laser_vector[j].first = cos(phi) * msg->range_max;
-            laser_vector[j].second = sin(phi) * msg->range_max;
-        }else if(j == 0){  
-            laser_vector[j].first = cos(phi) * msg->ranges[i] * 0.5;
-            laser_vector[j].second = sin(phi) * msg->ranges[i] * 0.5;
-            
+        
+        if(j == 0){  
+        
+            if(msg->ranges[i] == std::numeric_limits<float>::infinity()){
+                laser_vector[j].first = cos(phi) ;//* msg->range_max * 0.5;
+                laser_vector[j].second = sin(phi) ;//* msg->range_max * 0.5;
+            }else if(msg->ranges[i] > 0.5){
+                laser_vector[j].first = cos(phi) ;//* msg->ranges[i] * 0.5;
+                laser_vector[j].second = sin(phi) ;//* msg->ranges[i] * 0.5;
+            }else{
+                laser_vector[j].first = cos(phi) * -1;//msg->ranges[i] * -20;
+                laser_vector[j].second = sin(phi) * -1;//msg->ranges[i] * -20;
+            }
         }else{
-            laser_vector[j].first = cos(phi) * msg->ranges[i];
-            laser_vector[j].second = sin(phi) * msg->ranges[i];
+        
+            if(msg->ranges[i] == std::numeric_limits<float>::infinity()){
+                laser_vector[j].first = cos(phi) ;//* msg->range_max;
+                laser_vector[j].second = sin(phi) ;//* msg->range_max;
+            }else if(msg->ranges[i] > 0.5){
+                laser_vector[j].first = cos(phi) ;//* msg->ranges[i];
+                laser_vector[j].second = sin(phi) ;//* msg->ranges[i];
+            }else{
+                laser_vector[j].first = cos(phi) * -1;//msg->ranges[i] * -20;
+                laser_vector[j].second = sin(phi) * -1;//msg->ranges[i] * -20;
+            }
         }
         //ROS_INFO("laser No. : %d, value: %f\n", i, msg->ranges[i]);
         x_vector += laser_vector[j].first;
         y_vector += laser_vector[j].second;        
     }
-    
+    //ROS_INFO("before: x_vector: %f, y_vector: %f\n", x_vector, y_vector);
     // normalize
-    x_vector = x_vector / sqrt(pow(x_vector, 2) + pow(y_vector, 2));
-    y_vector = y_vector / sqrt(pow(x_vector, 2) + pow(y_vector, 2));
+    float normal = sqrt(pow(x_vector, 2) + pow(y_vector, 2));
+    x_vector = x_vector / normal;
+    y_vector = y_vector / normal;
     
     ROS_INFO("x_vector: %f, y_vector: %f\n", x_vector, y_vector);
 }
