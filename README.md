@@ -16,6 +16,6 @@
 * First: calculate Point A & Point B vector  
 * Then: summing per radian vector by checking laser data values   
 * Final: combine two vector 
-
-* Maybe not a good method because mobile car may collide in some situation & paramater relationship  
+* * *
+Maybe not a good method because mobile car may collide in some situation & paramater relationship  
 
