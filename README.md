@@ -4,8 +4,9 @@
 
 ![image](https://github.com/glitter2626/ROS_MoblieCar/blob/master/simulation_enviroment.png)
 
-## Publish Topic Goal:
+## Move From Point A to Point B:
+* tf tree(base_link -> laser): roslaunch moblie_car moblie_car.launch 
 * rviz: rosrun rviz rviz
-* publish goal topic: click 2D Nav Goal button to implement Point A to Point B
+* publish goal topic: click "2D Nav Goal" button to implement 
 
 ![image](https://github.com/glitter2626/ROS_MoblieCar/blob/master/rviz_goal.png)
