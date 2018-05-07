@@ -30,13 +30,13 @@ float tmp_theta = 0.0;
 float e = 0;
 float old_e = 0;
 float E = 0;
-const float Kp = 4;
+const float Kp = 1;
 const float Ki = 0.01;
 const float Kd = 0.1; 
 const float pi = 3.1415;
 
-float GOAL_X = -2.0;
-float GOAL_Y = -0.5;
+float GOAL_X = 0.0; //-2.0;
+float GOAL_Y = 0.0; //-0.5;
 
 const int vector_count = 30;
 float x_vector = 0.0;
@@ -77,7 +77,7 @@ void odometryCallback(const nav_msgs::Odometry::ConstPtr& msg)
     //ROS_INFO("Goal x: %f \t, y: %f\n", GOAL_X, GOAL_Y);
     
     // TODO
-    if(fabs(GOAL_Y - msg->pose.pose.position.y) < 0.02  && fabs(GOAL_X - msg->pose.pose.position.x) < 0.02){
+    if(fabs(GOAL_Y - msg->pose.pose.position.y) < 0.07  && fabs(GOAL_X - msg->pose.pose.position.x) < 0.07){
         
         twist_msg.linear.x = 0;
         twist_msg.linear.y = 0;
@@ -87,7 +87,7 @@ void odometryCallback(const nav_msgs::Odometry::ConstPtr& msg)
         
         return;   
     }
-    
+    /*
     float delta_x = GOAL_X - msg->pose.pose.position.x;
     float delta_y = GOAL_Y - msg->pose.pose.position.y;
     // normalize
@@ -96,8 +96,8 @@ void odometryCallback(const nav_msgs::Odometry::ConstPtr& msg)
     delta_x = delta_x / normal;
     delta_y = delta_y / normal;
     float delta_theta = atan2(delta_y * alpha + y_vector * (1 - alpha), delta_x * alpha + x_vector * (1 - alpha));
-    
-    //float delta_theta = atan2((GOAL_Y - msg->pose.pose.position.y), (GOAL_X - msg->pose.pose.position.x));
+    */
+    float delta_theta = atan2((GOAL_Y - msg->pose.pose.position.y), (GOAL_X - msg->pose.pose.position.x));
     float x = msg->pose.pose.orientation.x;
     float y = msg->pose.pose.orientation.y;
     float z = msg->pose.pose.orientation.z;
@@ -107,7 +107,7 @@ void odometryCallback(const nav_msgs::Odometry::ConstPtr& msg)
     tmp_theta = phi;
     
     float angular_z = PID(delta_theta, phi);
-    float v = 0.2;
+    float v = 0.1;
     
     //ROS_INFO("delta_theta: %f \t, phi: %f\n", delta_theta, phi);
     //ROS_INFO("angular_z: %f\n", angular_z);
@@ -198,7 +198,7 @@ int main(int argc, char **argv)
   
   goal_sub = n.subscribe("move_base_simple/goal", 2000, goalCallback);
   
-  laser_sub = n.subscribe("/scan", 2000, laserCallback);  // !
+  //laser_sub = n.subscribe("/scan", 2000, laserCallback);  // !
 
   init_PID();
 
